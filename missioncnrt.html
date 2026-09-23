@@ -2428,49 +2428,12 @@
       // Appeler le chargement au démarrage de l'admin
       loadAdminCoordinationPages();
     </script>
-    <div id="pwa-install-banner" style="display:none; position:fixed; left:16px; right:16px; bottom:16px; z-index:9999; background:#002452; color:#fff; border-radius:12px; padding:14px 18px; box-shadow:0 12px 30px -10px rgba(0,0,0,0.4); align-items:center; gap:14px; font-family:inherit;">
-      <img src="icons/icon-72.png" alt="" style="width:40px;height:40px;border-radius:10px;flex-shrink:0;">
-      <div style="flex:1; min-width:180px;">
-        <div style="font-weight:700; font-size:0.95rem;">Installer Rotaract Tunisie</div>
-        <div style="font-size:0.8rem; opacity:0.85;">Ajoutez le site à votre écran d'accueil ou votre bureau pour un accès rapide.</div>
-      </div>
-      <button id="pwa-install-btn" style="background:#d41b5c; color:#fff; border:none; padding:9px 16px; border-radius:999px; font-weight:700; font-size:0.85rem; cursor:pointer; flex-shrink:0;">Installer</button>
-      <button id="pwa-dismiss-btn" aria-label="Fermer" style="background:transparent; border:none; color:#fff; opacity:0.7; font-size:1.1rem; cursor:pointer; flex-shrink:0;">✕</button>
-    </div>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('sw.js').catch(() => {});
         });
       }
-      (function () {
-        let deferredPrompt = null;
-        const banner = document.getElementById('pwa-install-banner');
-        const installBtn = document.getElementById('pwa-install-btn');
-        const dismissBtn = document.getElementById('pwa-dismiss-btn');
-        window.addEventListener('beforeinstallprompt', (e) => {
-          e.preventDefault();
-          deferredPrompt = e;
-          if (!sessionStorage.getItem('pwaBannerDismissed')) {
-            banner.style.display = 'flex';
-          }
-        });
-        if (installBtn) installBtn.addEventListener('click', async () => {
-          banner.style.display = 'none';
-          if (deferredPrompt) {
-            deferredPrompt.prompt();
-            await deferredPrompt.userChoice;
-            deferredPrompt = null;
-          }
-        });
-        if (dismissBtn) dismissBtn.addEventListener('click', () => {
-          banner.style.display = 'none';
-          sessionStorage.setItem('pwaBannerDismissed', '1');
-        });
-        window.addEventListener('appinstalled', () => {
-          banner.style.display = 'none';
-        });
-      })();
     </script>
   </body>
 </html>
