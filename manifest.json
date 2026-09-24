@@ -2,7 +2,7 @@
   "name": "Rotaract Tunisie — Coordination Nationale",
   "short_name": "Rotaract Tunisie",
   "description": "Réseau des clubs Rotaract en Tunisie — coordination nationale, événements, structure et mission.",
-  "start_url": "./index__2_.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
