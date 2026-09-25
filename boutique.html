@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Boutique - Coordination Nationale Rotaract Tunisie</title>
+    <style>
+      :root {
+        --rotaract-cranberry: #d41b5c;
+        --rotaract-navy: #002452;
+        --bg-light: #fafafb;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --border-light: #e2e8f0;
+        --surface: #ffffff;
+      }
+      :root[data-theme="dark"] {
+        --bg-light: #0f1420;
+        --text-dark: #e8ecf3;
+        --text-muted: #9aa5b8;
+        --border-light: #2a3345;
+        --surface: #161d2e;
+      }
+      :root[data-theme="dark"] .content-container,
+      :root[data-theme="dark"] .product-card {
+        background: var(--surface) !important;
+        color: var(--text-dark);
+      }
+      .order-modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+      .order-modal-backdrop.open { display: flex; }
+      .order-modal { background: var(--surface); border-radius: 10px; max-width: 480px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 28px; position: relative; color: var(--text-dark); }
+      .order-modal-close { position: absolute; top: 12px; right: 14px; background: var(--bg-light); border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 1.3rem; cursor: pointer; color: var(--text-muted); line-height: 1; display: flex; align-items: center; justify-content: center; }
+      .order-modal-close:hover { background: var(--border-light); color: var(--text-dark); }
+      :root[data-theme="dark"] .order-modal-backdrop { background: rgba(0,0,0,0.75); }
+      body {
+        margin: 0;
+        background-color: var(--bg-light);
+        font-family: system-ui, -apple-system, sans-serif;
+        color: var(--text-dark);
+      }
+      .subpage-hero {
+        position: relative;
+        width: 100%;
+        height: 60vh;
+        min-height: 400px;
+        display: flex;
+        align-items: flex-end;
+        background: linear-gradient(135deg, var(--rotaract-navy), #001025)
+          no-repeat center center/cover;
+      }
+      .subpage-hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          to bottom,
+          rgba(0, 36, 82, 0.2) 0%,
+          rgba(0, 36, 82, 0.9) 100%
+        );
+      }
+      .subpage-hero-content {
+        position: relative;
+        z-index: 2;
+        padding: 3rem 5%;
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .back-link {
+        color: #ffffff;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: block;
+        margin-bottom: 1rem;
+        opacity: 0.9;
+      }
+      .subpage-title {
+        color: #ffffff;
+        font-size: 2.8rem;
+        font-weight: 800;
+        margin: 0;
+      }
+      .content-container {
+        max-width: 1100px;
+        margin: -3rem auto 4rem auto;
+        background: #ffffff;
+        padding: 3rem;
+        border-radius: 8px;
+        border: 1px solid var(--border-light);
+        position: relative;
+        z-index: 3;
+      }
+      h2 {
+        color: var(--rotaract-navy);
+        font-size: 1.6rem;
+        margin-top: 0;
+      }
+      p {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: var(--text-muted);
+      }
+      .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+        gap: 24px;
+        margin-top: 1.5rem;
+      }
+      .product-card {
+        border: 1px solid var(--border-light);
+        border-radius: 10px;
+        overflow: hidden;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+      }
+      .product-card img {
+        width: 100%;
+        aspect-ratio: 4/3;
+        object-fit: cover;
+        background: var(--bg-light);
+      }
+      .product-card .product-body {
+        padding: 14px 16px 18px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+      }
+      .product-card h3 {
+        margin: 0 0 6px 0;
+        font-size: 1.05rem;
+        color: var(--text-dark);
+      }
+      .product-card .product-desc {
+        font-size: 0.88rem;
+        line-height: 1.5;
+        color: var(--text-muted);
+        margin: 0 0 10px 0;
+        flex: 1;
+      }
+      .product-card .product-price {
+        font-weight: 800;
+        color: var(--rotaract-cranberry);
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+      }
+      .btn-order {
+        background: var(--rotaract-cranberry);
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 10px 14px;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 0.92rem;
+      }
+      .btn-order:hover { opacity: 0.9; }
+      .field { margin-bottom: 14px; }
+      .field label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; color: var(--text-dark); }
+      .field input, .field textarea {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 9px 10px;
+        border: 1px solid var(--border-light);
+        border-radius: 6px;
+        font-size: 0.95rem;
+        background: var(--surface);
+        color: var(--text-dark);
+      }
+      .form-success { background: #e7f7ee; color: #14532d; border: 1px solid #bbf7d0; padding: 10px 12px; border-radius: 6px; margin-bottom: 14px; font-size: 0.9rem; }
+      .form-error { background: #fdecec; color: #7f1d1d; border: 1px solid #fca5a5; padding: 10px 12px; border-radius: 6px; margin-bottom: 14px; font-size: 0.9rem; }
+    </style>
+  </head>
+  <body>
+    <div id="public-view">
+    <header class="subpage-hero" id="shop-hero">
+      <div class="subpage-hero-overlay"></div>
+      <div class="subpage-hero-content">
+        <a href="index.html" class="back-link">&larr; Retour à l'accueil</a>
+        <h1 class="subpage-title">Notre Boutique</h1>
+      </div>
+    </header>
+
+    <main class="content-container">
+      <h2>Nos articles</h2>
+      <p style="margin-top:-8px">Passez commande, nous vous contactons pour finaliser le paiement (espèces ou virement).</p>
+      <div class="products-grid" id="products-grid"></div>
+      <p id="products-empty" style="display:none; color: var(--text-muted);">Aucun article n'est disponible pour le moment.</p>
+    </main>
+    </div>
+
+    <div class="order-modal-backdrop" id="order-modal">
+      <div class="order-modal">
+        <button class="order-modal-close" id="order-modal-close" type="button" aria-label="Fermer">&times;</button>
+        <h2 id="order-modal-title" style="margin-top:0">Commander</h2>
+        <div id="order-form-feedback"></div>
+        <form id="order-form">
+          <input type="hidden" id="order-product-id" />
+          <input type="hidden" id="order-product-name" />
+          <div class="field">
+            <label for="order-name">Nom &amp; prénom *</label>
+            <input type="text" id="order-name" required />
+          </div>
+          <div class="field">
+            <label for="order-phone">Téléphone *</label>
+            <input type="tel" id="order-phone" required />
+          </div>
+          <div class="field">
+            <label for="order-quantity">Quantité</label>
+            <input type="number" id="order-quantity" min="1" value="1" />
+          </div>
+          <div class="field">
+            <label for="order-note">Note (taille, couleur, etc.)</label>
+            <textarea id="order-note" rows="3"></textarea>
+          </div>
+          <button type="submit" class="btn-order" id="order-submit-btn" style="width:100%">
+            Envoyer la commande
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      const supabaseClient = supabase.createClient(
+        "https://lqsdhavppkzbilajpxig.supabase.co",
+        "sb_publishable_y3IykYMZ4e0fKL77m3p43w_K84s542l"
+      );
+
+      const el = (id) => document.getElementById(id);
+      function escapeHtml(str) {
+        return String(str ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            }[c])
+        );
+      }
+
+      let productsCache = [];
+
+      async function loadProducts() {
+        const { data, error } = await supabaseClient
+          .from("products")
+          .select("*")
+          .eq("is_active", true)
+          .order("display_order", { ascending: true });
+        if (error || !data || !data.length) {
+          el("products-empty").style.display = "block";
+          return;
+        }
+        productsCache = data;
+        renderProducts(data);
+      }
+
+      function renderProducts(products) {
+        const grid = el("products-grid");
+        grid.innerHTML = products
+          .map(
+            (p) => `
+          <div class="product-card">
+            ${
+              p.image_url
+                ? `<img src="${p.image_url}" alt="${escapeHtml(p.name)}">`
+                : ""
+            }
+            <div class="product-body">
+              <h3>${escapeHtml(p.name)}</h3>
+              <p class="product-desc">${escapeHtml(p.description || "")}</p>
+              <div class="product-price">${Number(p.price).toFixed(2)} TND</div>
+              <button class="btn-order" data-id="${p.id}">Commander</button>
+            </div>
+          </div>`
+          )
+          .join("");
+
+        grid.querySelectorAll(".btn-order").forEach((btn) =>
+          btn.addEventListener("click", () => openOrderModal(btn.dataset.id))
+        );
+      }
+
+      function openOrderModal(productId) {
+        const p = productsCache.find((x) => x.id === productId);
+        if (!p) return;
+        el("order-form").reset();
+        el("order-form-feedback").innerHTML = "";
+        el("order-product-id").value = p.id;
+        el("order-product-name").value = p.name;
+        el("order-modal-title").textContent = "Commander : " + p.name;
+        el("order-modal").classList.add("open");
+      }
+
+      function closeOrderModal() {
+        el("order-modal").classList.remove("open");
+      }
+
+      el("order-modal-close").addEventListener("click", closeOrderModal);
+      el("order-modal").addEventListener("click", (e) => {
+        if (e.target === el("order-modal")) closeOrderModal();
+      });
+
+      el("order-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = el("order-submit-btn");
+        btn.disabled = true;
+        btn.textContent = "Envoi…";
+        try {
+          const payload = {
+            product_id: el("order-product-id").value,
+            product_name: el("order-product-name").value,
+            customer_name: el("order-name").value.trim(),
+            customer_phone: el("order-phone").value.trim(),
+            quantity: Number(el("order-quantity").value || 1),
+            note: el("order-note").value.trim(),
+          };
+          const { error } = await supabaseClient.from("orders").insert(payload);
+          if (error) throw error;
+          el("order-form-feedback").innerHTML =
+            '<div class="form-success">Commande envoyée ! Nous vous contactons rapidement.</div>';
+          el("order-form").reset();
+          setTimeout(closeOrderModal, 1800);
+        } catch (err) {
+          console.error(err);
+          el("order-form-feedback").innerHTML =
+            '<div class="form-error">' +
+            (err.message || "Une erreur est survenue.") +
+            "</div>";
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Envoyer la commande";
+        }
+      });
+
+      loadProducts();
+    </script>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#d41b5c">
+    <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icon-16.png">
+    <link rel="apple-touch-icon" href="icon-180.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Rotaract Tunisie">
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js').catch(() => {});
+        });
+      }
+    </script>
+  </body>
+</html>
