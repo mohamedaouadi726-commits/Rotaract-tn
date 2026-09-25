@@ -1314,6 +1314,7 @@
               <li><a href="#clubs" data-i18n="nav-clubs">Clubs</a></li>
               <li><a href="#coordination" data-i18n="nav-about">À propos</a></li>
               <li><a href="evenements.html" data-i18n="nav-events">Événements</a></li>
+              <li><a href="boutique.html" data-i18n="nav-shop">Boutique</a></li>
             </ul>
             <button class="lang-toggle" id="lang-toggle" type="button">EN</button>
             <button class="theme-toggle" id="theme-toggle" type="button">🌙</button>
@@ -1785,6 +1786,8 @@
            <li><button class="tab-btn" data-panel="panel-mission">Mission</button></li>
             <li><button class="tab-btn" data-panel="panel-structure">Structure</button></li>
             <li><button class="tab-btn" data-panel="panel-events">Événements</button></li>
+            <li><button class="tab-btn" data-panel="panel-shop">Boutique</button></li>
+            <li><button class="tab-btn" data-panel="panel-orders">Commandes</button></li>
             <li><button data-panel="panel-account">Mon compte</button></li>
             <li><button data-panel="panel-admins">Administrateurs</button></li>
           </ul>
@@ -1997,6 +2000,112 @@
         </div>
       </div>
     </section>
+
+    <!-- Panneau Boutique -->
+    <section class="admin-panel" id="panel-shop">
+      <div class="container">
+        <div class="panel-head">
+          <h2 style="margin: 0">Articles de la boutique</h2>
+          <button class="btn btn-primary" id="add-product-btn">
+            + Ajouter un article
+          </button>
+        </div>
+        <div id="products-feedback"></div>
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Nom</th>
+                <th>Prix</th>
+                <th>Statut</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="products-table-body">
+              <tr>
+                <td colspan="5">Chargement…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="drawer-backdrop" id="products-drawer-backdrop">
+          <div class="drawer">
+            <h3 id="products-drawer-title">Ajouter un article</h3>
+            <div id="products-form-feedback"></div>
+            <form id="products-form">
+              <input type="hidden" id="product-id" />
+              <div class="field">
+                <label for="product-name">Nom *</label
+                ><input type="text" id="product-name" required />
+              </div>
+              <div class="field">
+                <label for="product-price">Prix (TND) *</label
+                ><input type="number" step="0.01" min="0" id="product-price" required />
+              </div>
+              <div class="field">
+                <label for="product-description">Description</label>
+                <textarea id="product-description" rows="4"></textarea>
+              </div>
+              <div class="field">
+                <label for="product-photo">Photo</label
+                ><input type="file" id="product-photo" accept="image/*" /><span
+                  class="helper-text"
+                  id="current-product-photo-name"
+                ></span>
+              </div>
+              <div class="field">
+                <label style="display:flex; align-items:center; gap:8px; font-weight:400">
+                  <input type="checkbox" id="product-active" style="width:auto" />
+                  Article visible sur la boutique
+                </label>
+              </div>
+              <div style="display: flex; gap: 10px; margin-top: 20px">
+                <button type="submit" class="btn btn-primary" id="product-save-btn">
+                  Enregistrer
+                </button>
+                <button type="button" class="btn btn-outline" id="product-cancel-btn">
+                  Annuler
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Panneau Commandes -->
+    <section class="admin-panel" id="panel-orders">
+      <div class="container">
+        <div class="panel-head">
+          <h2 style="margin: 0">Commandes reçues</h2>
+        </div>
+        <div id="orders-feedback"></div>
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Article</th>
+                <th>Client</th>
+                <th>Téléphone</th>
+                <th>Qté</th>
+                <th>Note</th>
+                <th>Statut</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="orders-table-body">
+              <tr>
+                <td colspan="8">Chargement…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
         <section class="admin-panel" id="panel-account">
           <div class="container" style="max-width: 480px">
             <div class="panel-head"><h2 style="margin: 0">Mon compte</h2></div>
@@ -2952,6 +3061,16 @@ window.addEventListener("hashchange", route);
         });
         el("events-form").addEventListener("submit", onEventFormSubmit);
 
+        const productsDrawerBackdrop = el("products-drawer-backdrop");
+        el("add-product-btn").addEventListener("click", () =>
+          openProductDrawer(null)
+        );
+        el("product-cancel-btn").addEventListener("click", closeProductDrawer);
+        productsDrawerBackdrop.addEventListener("click", (e) => {
+          if (e.target === productsDrawerBackdrop) closeProductDrawer();
+        });
+        el("products-form").addEventListener("submit", onProductFormSubmit);
+
         el("add-admin-form").addEventListener("submit", onAddAdminSubmit);
         el("password-form").addEventListener("submit", onPasswordFormSubmit);
 
@@ -3016,6 +3135,8 @@ window.addEventListener("hashchange", route);
         showScreen("dashboard");
         loadClubs();
         loadEventsAdmin();
+        loadProductsAdmin();
+        loadOrdersAdmin();
         loadTeam();
         if (currentAdminRole === "super_admin") loadAdmins();
       }
@@ -3463,6 +3584,247 @@ window.addEventListener("hashchange", route);
         }
         showFeedback("events-feedback", "Événement supprimé.", "success");
         loadEventsAdmin();
+      }
+
+      // ============================================================
+      // BOUTIQUE (articles + commandes)
+      // ============================================================
+      let productsCache = [];
+
+      async function loadProductsAdmin() {
+        const { data, error } = await supabaseClient
+          .from("products")
+          .select("*")
+          .order("display_order", { ascending: true });
+        const tbody = el("products-table-body");
+        if (error) {
+          tbody.innerHTML = `<tr><td colspan="5">Erreur de chargement.</td></tr>`;
+          return;
+        }
+        productsCache = data || [];
+        renderProductsTable(productsCache);
+      }
+
+      function renderProductsTable(products) {
+        const tbody = el("products-table-body");
+        if (!products.length) {
+          tbody.innerHTML = `<tr><td colspan="5">Aucun article pour le moment.</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = products
+          .map(
+            (p) => `
+    <tr>
+      <td>${
+        p.image_url
+          ? `<img class="table-logo" src="${p.image_url}" alt="">`
+          : `<div class="table-logo"></div>`
+      }</td>
+      <td>${escapeHtml(p.name || "")}</td>
+      <td>${Number(p.price).toFixed(2)} TND</td>
+      <td><span class="pill ${p.is_active ? "" : "super"}">${
+              p.is_active ? "Visible" : "Masqué"
+            }</span></td>
+      <td><div class="table-actions"><button data-action="edit" data-id="${
+        p.id
+      }">Modifier</button><button data-action="delete" data-id="${
+              p.id
+            }">Supprimer</button></div></td>
+    </tr>`
+          )
+          .join("");
+
+        tbody
+          .querySelectorAll('button[data-action="edit"]')
+          .forEach((btn) =>
+            btn.addEventListener("click", () => openProductDrawer(btn.dataset.id))
+          );
+        tbody
+          .querySelectorAll('button[data-action="delete"]')
+          .forEach((btn) =>
+            btn.addEventListener("click", () => deleteProduct(btn.dataset.id))
+          );
+      }
+
+      function openProductDrawer(productId) {
+        showFeedback("products-form-feedback", "");
+        el("products-form").reset();
+        el("current-product-photo-name").textContent = "";
+
+        if (productId) {
+          const p = productsCache.find((x) => x.id === productId);
+          el("products-drawer-title").textContent = "Modifier l'article";
+          el("product-id").value = p.id;
+          el("product-name").value = p.name || "";
+          el("product-price").value = p.price ?? "";
+          el("product-description").value = p.description || "";
+          el("product-active").checked = p.is_active;
+          if (p.image_url)
+            el("current-product-photo-name").textContent =
+              "Photo actuelle conservée si aucun nouveau fichier n'est choisi.";
+        } else {
+          el("products-drawer-title").textContent = "Ajouter un article";
+          el("product-id").value = "";
+          el("product-active").checked = true;
+        }
+        el("products-drawer-backdrop").classList.add("open");
+      }
+
+      function closeProductDrawer() {
+        el("products-drawer-backdrop").classList.remove("open");
+      }
+
+      async function onProductFormSubmit(e) {
+        e.preventDefault();
+        showFeedback("products-form-feedback", "");
+        el("product-save-btn").disabled = true;
+        el("product-save-btn").textContent = "Enregistrement…";
+
+        try {
+          const id = el("product-id").value || null;
+          const payload = {
+            name: el("product-name").value.trim(),
+            price: Number(el("product-price").value || 0),
+            description: el("product-description").value.trim(),
+            is_active: el("product-active").checked,
+          };
+          const photoFile = el("product-photo").files[0];
+          if (photoFile)
+            payload.image_url = await uploadImage(photoFile, "products");
+
+          let error;
+          if (id)
+            ({ error } = await supabaseClient
+              .from("products")
+              .update(payload)
+              .eq("id", id));
+          else
+            ({ error } = await supabaseClient.from("products").insert(payload));
+          if (error) throw error;
+
+          closeProductDrawer();
+          showFeedback(
+            "products-feedback",
+            "Article enregistré avec succès.",
+            "success"
+          );
+          loadProductsAdmin();
+        } catch (err) {
+          console.error(err);
+          showFeedback(
+            "products-form-feedback",
+            err.message || "Une erreur est survenue."
+          );
+        } finally {
+          el("product-save-btn").disabled = false;
+          el("product-save-btn").textContent = "Enregistrer";
+        }
+      }
+
+      async function deleteProduct(id) {
+        const p = productsCache.find((x) => x.id === id);
+        if (!confirm(`Supprimer l'article « ${p?.name ?? ""} » ?`)) return;
+        const { error } = await supabaseClient
+          .from("products")
+          .delete()
+          .eq("id", id);
+        if (error) {
+          showFeedback(
+            "products-feedback",
+            "Suppression impossible : " + error.message
+          );
+          return;
+        }
+        showFeedback("products-feedback", "Article supprimé.", "success");
+        loadProductsAdmin();
+      }
+
+      let ordersCache = [];
+
+      async function loadOrdersAdmin() {
+        const { data, error } = await supabaseClient
+          .from("orders")
+          .select("*")
+          .order("created_at", { ascending: false });
+        const tbody = el("orders-table-body");
+        if (error) {
+          tbody.innerHTML = `<tr><td colspan="8">Erreur de chargement.</td></tr>`;
+          return;
+        }
+        ordersCache = data || [];
+        renderOrdersTable(ordersCache);
+      }
+
+      function renderOrdersTable(orders) {
+        const tbody = el("orders-table-body");
+        if (!orders.length) {
+          tbody.innerHTML = `<tr><td colspan="8">Aucune commande pour le moment.</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = orders
+          .map((o) => {
+            const d = o.created_at
+              ? new Date(o.created_at).toLocaleDateString("fr-FR")
+              : "";
+            return `
+    <tr>
+      <td>${d}</td>
+      <td>${escapeHtml(o.product_name || "")}</td>
+      <td>${escapeHtml(o.customer_name || "")}</td>
+      <td>${escapeHtml(o.customer_phone || "")}</td>
+      <td>${o.quantity ?? 1}</td>
+      <td>${escapeHtml(o.note || "")}</td>
+      <td>
+        <select data-id="${o.id}" class="order-status-select">
+          <option value="nouveau" ${o.status === "nouveau" ? "selected" : ""}>Nouveau</option>
+          <option value="traité" ${o.status === "traité" ? "selected" : ""}>Traité</option>
+          <option value="annulé" ${o.status === "annulé" ? "selected" : ""}>Annulé</option>
+        </select>
+      </td>
+      <td><div class="table-actions"><button data-action="delete" data-id="${
+        o.id
+      }">Supprimer</button></div></td>
+    </tr>`;
+          })
+          .join("");
+
+        tbody.querySelectorAll(".order-status-select").forEach((sel) =>
+          sel.addEventListener("change", () =>
+            updateOrderStatus(sel.dataset.id, sel.value)
+          )
+        );
+        tbody
+          .querySelectorAll('button[data-action="delete"]')
+          .forEach((btn) =>
+            btn.addEventListener("click", () => deleteOrder(btn.dataset.id))
+          );
+      }
+
+      async function updateOrderStatus(id, status) {
+        const { error } = await supabaseClient
+          .from("orders")
+          .update({ status })
+          .eq("id", id);
+        if (error) {
+          showFeedback("orders-feedback", "Mise à jour impossible : " + error.message);
+          return;
+        }
+        showFeedback("orders-feedback", "Statut mis à jour.", "success");
+        loadOrdersAdmin();
+      }
+
+      async function deleteOrder(id) {
+        if (!confirm("Supprimer cette commande ?")) return;
+        const { error } = await supabaseClient
+          .from("orders")
+          .delete()
+          .eq("id", id);
+        if (error) {
+          showFeedback("orders-feedback", "Suppression impossible : " + error.message);
+          return;
+        }
+        showFeedback("orders-feedback", "Commande supprimée.", "success");
+        loadOrdersAdmin();
       }
 
       let teamCache = [];
