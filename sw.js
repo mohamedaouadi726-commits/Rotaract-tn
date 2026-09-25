@@ -5,6 +5,7 @@ const PRECACHE_URLS = [
   "./evenements.html",
   "./missioncnrt.html",
   "./structurecnrt.html",
+  "./boutique.html",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png"
