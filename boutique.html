@@ -201,19 +201,27 @@
           <input type="hidden" id="order-product-id" />
           <input type="hidden" id="order-product-name" />
           <div class="field">
-            <label for="order-name">Nom du club *</label>
+            <label for="order-name">Nom &amp; prénom *</label>
             <input type="text" id="order-name" required />
           </div>
           <div class="field">
-            <label for="order-phone">Mail du club *</label>
+            <label for="order-phone">Téléphone *</label>
             <input type="tel" id="order-phone" required />
+          </div>
+          <div class="field">
+            <label for="order-club">Club Rotaract *</label>
+            <input type="text" id="order-club" placeholder="ex. Rotaract Tunis Doyen" required />
+          </div>
+          <div class="field">
+            <label for="order-club-email">Email du club *</label>
+            <input type="email" id="order-club-email" required />
           </div>
           <div class="field">
             <label for="order-quantity">Quantité</label>
             <input type="number" id="order-quantity" min="1" value="1" />
           </div>
           <div class="field">
-            <label for="order-note">Note</label>
+            <label for="order-note">Note (taille, couleur, etc.)</label>
             <textarea id="order-note" rows="3"></textarea>
           </div>
           <button type="submit" class="btn-order" id="order-submit-btn" style="width:100%">
@@ -318,6 +326,8 @@
             product_name: el("order-product-name").value,
             customer_name: el("order-name").value.trim(),
             customer_phone: el("order-phone").value.trim(),
+            club_name: el("order-club").value.trim(),
+            club_email: el("order-club-email").value.trim(),
             quantity: Number(el("order-quantity").value || 1),
             note: el("order-note").value.trim(),
           };
