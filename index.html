@@ -1736,7 +1736,7 @@
             </button>
           </form>
           <p class="helper-text" style="margin-top: 18px">
-            <a href="index.html">← Retour au site public</a>
+            <a href="rotaract.html">← Retour au site public</a>
           </p>
         </div>
       </div>
@@ -2090,6 +2090,8 @@
                 <th>Article</th>
                 <th>Client</th>
                 <th>Téléphone</th>
+                <th>Club</th>
+                <th>Email club</th>
                 <th>Qté</th>
                 <th>Note</th>
                 <th>Statut</th>
@@ -3772,6 +3774,8 @@ window.addEventListener("hashchange", route);
       <td>${escapeHtml(o.product_name || "")}</td>
       <td>${escapeHtml(o.customer_name || "")}</td>
       <td>${escapeHtml(o.customer_phone || "")}</td>
+      <td>${escapeHtml(o.club_name || "")}</td>
+      <td>${escapeHtml(o.club_email || "")}</td>
       <td>${o.quantity ?? 1}</td>
       <td>${escapeHtml(o.note || "")}</td>
       <td>
