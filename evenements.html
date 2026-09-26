@@ -575,7 +575,19 @@
       .events-slider-dots { display: flex; gap: 8px; justify-content: center; margin-top: 18px; }
       .events-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border-light); cursor: pointer; border: none; padding: 0; }
       .events-dot.active { background: var(--rotaract-cranberry, #E6007E); }
-      .events-past-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-top: 1rem; }
+      .events-past-grid { margin-top: 1rem; }
+      .events-year-group { margin-bottom: 2rem; }
+      .events-year-group:last-child { margin-bottom: 0; }
+      .events-year-heading {
+        color: var(--rotaract-navy);
+        font-size: 1.15rem;
+        font-weight: 800;
+        margin: 0 0 12px 0;
+        padding-bottom: 8px;
+        border-bottom: 2px solid var(--rotaract-cranberry, #d41b5c);
+        display: inline-block;
+      }
+      .events-year-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
       .event-card-mini { background: var(--surface); border: 1px solid var(--border-light); border-radius: 8px; padding: 16px; cursor: pointer; opacity: 0.85; transition: opacity .15s; }
       .event-card-mini:hover { opacity: 1; }
       .event-card-mini img { width: 100%; height: 110px; object-fit: cover; border-radius: 6px; margin-bottom: 10px; background: var(--bg-light); }
@@ -1414,9 +1426,22 @@
           return;
         }
         empty.style.display = "none";
-        grid.innerHTML = eventsPast
-          .map(
-            (ev, i) => `
+
+        // Grouper les événements passés par année (la plus récente en premier)
+        const byYear = {};
+        eventsPast.forEach((ev) => {
+          const year = (ev.event_date || "").slice(0, 4) || "—";
+          if (!byYear[year]) byYear[year] = [];
+          byYear[year].push(ev);
+        });
+        const years = Object.keys(byYear).sort((a, b) => b.localeCompare(a));
+
+        grid.innerHTML = years
+          .map((year) => {
+            const cards = byYear[year]
+              .map((ev) => {
+                const i = eventsPast.indexOf(ev);
+                return `
           <div class="event-card-mini" data-idx="${i}">
             ${
               ev.image_url
@@ -1425,9 +1450,17 @@
             }
             <div class="event-date-pill">${escapeHtml(formatEventDate(ev.event_date))}</div>
             <h4 style="margin: 6px 0 0;">${escapeHtml(eventText(ev, "title"))}</h4>
-          </div>`
-          )
+          </div>`;
+              })
+              .join("");
+            return `
+        <div class="events-year-group">
+          <h3 class="events-year-heading">${year}</h3>
+          <div class="events-year-grid">${cards}</div>
+        </div>`;
+          })
           .join("");
+
         grid.querySelectorAll(".event-card-mini").forEach((card) =>
           card.addEventListener("click", () =>
             openEventModal(eventsPast[Number(card.dataset.idx)])
