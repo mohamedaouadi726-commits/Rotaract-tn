@@ -925,6 +925,15 @@
       .admin-table tr:last-child td {
         border-bottom: none;
       }
+      .admin-year-row td {
+        background: var(--bg, #f4f6fa);
+        color: var(--rotaract-navy, #002452);
+        font-weight: 800;
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        padding: 8px 14px;
+      }
       .table-logo {
         width: 34px;
         height: 34px;
@@ -3457,9 +3466,21 @@ window.addEventListener("hashchange", route);
           tbody.innerHTML = `<tr><td colspan="6">Aucun événement pour le moment.</td></tr>`;
           return;
         }
-        tbody.innerHTML = events
-          .map(
-            (ev) => `
+
+        // Grouper par année (la plus récente en premier)
+        const byYear = {};
+        events.forEach((ev) => {
+          const year = (ev.event_date || "").slice(0, 4) || "—";
+          if (!byYear[year]) byYear[year] = [];
+          byYear[year].push(ev);
+        });
+        const years = Object.keys(byYear).sort((a, b) => b.localeCompare(a));
+
+        tbody.innerHTML = years
+          .map((year) => {
+            const rows = byYear[year]
+              .map(
+                (ev) => `
     <tr>
       <td>${
         ev.image_url
@@ -3473,10 +3494,13 @@ window.addEventListener("hashchange", route);
       <td><div class="table-actions"><button data-action="edit" data-id="${
         ev.id
       }">Modifier</button><button data-action="delete" data-id="${
-              ev.id
-            }">Supprimer</button></div></td>
+                  ev.id
+                }">Supprimer</button></div></td>
     </tr>`
-          )
+              )
+              .join("");
+            return `<tr class="admin-year-row"><td colspan="6">${year}</td></tr>${rows}`;
+          })
           .join("");
 
         tbody
