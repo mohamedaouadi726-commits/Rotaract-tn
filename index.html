@@ -2,7 +2,7 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Rotaract Tunisie — Réseau des clubs</title>
     <meta
       name="description"
@@ -1292,6 +1292,69 @@
       }
       .lang-toggle { background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: 0.85rem; font-weight: 700; cursor: pointer; color: inherit; margin-left: 12px; }
       .lang-toggle:hover { background: rgba(0,0,0,0.05); }
+
+      /* ============================================================
+         CORRECTIFS MOBILE / RESPONSIVE
+         ============================================================ */
+      :root { --header-bg: rgba(245, 247, 250, 0.97); }
+      :root[data-theme="dark"] { --header-bg: rgba(15, 20, 32, 0.97); }
+
+      html { overflow-x: hidden; }
+      body { overflow-x: clip; max-width: 100%; }
+
+      .site-header {
+        z-index: 1000;
+        background: var(--header-bg);
+        padding-top: env(safe-area-inset-top, 0px);
+      }
+      .site-header nav { display: flex; align-items: center; margin-left: auto; }
+      .nav-toggle { margin-left: 8px; }
+
+      /* la carte reste dans sa boite : ne passe plus par-dessus le header */
+      .map-frame { position: relative; z-index: 0; isolation: isolate; }
+
+      .coord-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+        align-items: start;
+      }
+      @media (max-width: 900px) {
+        .coord-grid { grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+      }
+      .team-grid { grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); }
+
+      @media (max-width: 720px) {
+        .main-nav { top: 100%; }
+        .site-header .container { gap: 8px; }
+        .brand-logo-img { height: 30px; }
+        .lang-toggle, .theme-toggle { padding: 4px 10px; margin-left: 6px; }
+
+        .hero-section { padding: 2rem 20px; }
+        .hero-grid-layout { gap: 1.25rem; text-align: left; }
+        .hero-logo-container { padding: 0; }
+        .hero-header-badge { font-size: 0.75rem; letter-spacing: 0.06em; }
+        .hero-title { font-size: 1.6rem; }
+        .hero-text { text-align: left; font-size: 1rem; line-height: 1.65; }
+        .hero-stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .stat-number { font-size: 2rem; }
+        .stat-text { font-size: 0.75rem; }
+
+        #club-map { height: 340px; }
+        .zone-panel { padding: 14px; }
+
+        .section-head { flex-direction: column; align-items: flex-start; gap: 6px; margin-bottom: 20px; }
+        .section-head .lede { font-size: 1rem; }
+
+        #coordination { padding: 2rem 20px !important; }
+        #coordination h2 { font-size: 1.5rem !important; margin-bottom: 1.25rem !important; }
+        .coord-grid { grid-template-columns: 1fr; gap: 1rem; }
+        .subpage-card-link { padding: 1.25rem !important; }
+
+        .modal-card { padding: 22px; max-height: 90vh; overflow-y: auto; }
+        .drawer { padding: 20px; }
+        .site-footer { padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px)); }
+      }
     </style>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#d41b5c">
@@ -1300,7 +1363,7 @@
     <link rel="apple-touch-icon" href="icon-180.png">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Rotaract Tunisie">
   </head>
   <body>
@@ -1427,14 +1490,7 @@
               La coordination
             </h2>
 
-            <div
-              style="
-                display: grid;
-                grid-template-columns: 1fr 1fr 1fr;
-                gap: 2rem;
-                align-items: start;
-              "
-            >
+            <div class="coord-grid">
               <!-- Carte cliquable Mission -->
               <a
                 href="missioncnrt.html"
@@ -2660,7 +2716,11 @@ window.addEventListener("hashchange", route);
         a.addEventListener("click", () => mainNav.classList.remove("open"))
       );
 
-    leafletMap = L.map("club-map", { scrollWheelZoom: false }).setView(
+    leafletMap = L.map("club-map", {
+      scrollWheelZoom: false,
+      dragging: !L.Browser.mobile,
+      tap: false,
+    }).setView(
       [34.5, 9.5],
       6.3
     );
